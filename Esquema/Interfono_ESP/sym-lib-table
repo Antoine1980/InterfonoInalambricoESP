@@ -1,0 +1,4 @@
+(sym_lib_table
+  (lib (name Microchip_PIC12)(type Legacy)(uri ${KICAD_SYMBOL_DIR}/MCU_Microchip_PIC12.lib)(options "")(descr ""))
+  (lib (name ESP-01)(type Legacy)(uri E:/Proyectos/InterfonoInalambricoESP/Esquema/Libreria/ESP-01.lib)(options "")(descr ""))
+)
