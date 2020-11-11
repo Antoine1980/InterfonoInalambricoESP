@@ -2,18 +2,26 @@
  Name:		InterfonoLUZ_WifiAndo_ConLightSleep.ino
  Created:	10/19/2020 11:43:16 AM
  Author:	ainza
+Descripcion: Detecta sonido con un KY-038, con esto despierta al ESP-01 de light-sleep
+ y envia una seÃ±al por MQTT a un enchufe wifi Sonoff para que se encienda
+ IMPLEMENTANDO: usando libreria wifimanager
 */
 
+#include <WiFiManager.h>
 #include <PubSubClient.h>
-#include <ESP8266WiFi.h>
+#include <ESP8266WiFi.h> // Biblioteca bÃ¡sica de ESP8266 WiFi 
+#include <DNSServer.h>  // Servidor DNS local usado para redirigir todas las solicitudes al portal de configuraciÃ³n 
+#include <ESP8266WebServer.h> // Servidor web local usado para servir el portal de configuraciÃ³n. 
+#include <ArduinoJson.h>
+
 
 //definir las variables para la comunicacion Wifi
-const char* ssid = "Livebox-00B5";
-const char* pass = "5C0F66EA70CAA739A4321F5906";
+//const char* ssid = "Livebox-00B5";
+//const char* pass = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
 
 //Y el sevidor de MQTT con cloudMQTT
 const char* mqtt_server = "m21.cloudmqtt.com"; //Se puede realizar con ip, hacer ping al servidor y sabremos su IP
-const int mqtt_port = 16369;  //Este puerrto necesuta usuario y contraseña para el acceso
+const int mqtt_port = 16369;  //Este puerrto necesuta usuario y contraseï¿½a para el acceso
 char USER[50] = "bjnwhbwq";
 char PASSWORD[50] = "6wjV4Beno-t9";
 
@@ -43,7 +51,7 @@ void setup() {
     gpio_init();
     setup_wifi();
     client.setServer(mqtt_server, mqtt_port);
-    client.setCallback(callback);  //Mirar exactamente que hace y para que sirve, creo que es para mensajes que se mandan a la placa, ¿¿es decir subscripcion??
+    client.setCallback(callback);  //Mirar exactamente que hace y para que sirve, creo que es para mensajes que se mandan a la placa, ï¿½ï¿½es decir subscripcion??
 
 }
 
@@ -51,29 +59,39 @@ void setup() {
 void setup_wifi() {
 
     delay(10);
-    // Empieza la conexion con la wifi
-    Serial.println();
-    Serial.print("Connecting to ");
-    Serial.println(ssid);
-    //Pasamos los datos de la wifi a la que hay que conectarse
-    WiFi.mode(WIFI_STA);  //Poner el WIFI en modo estacion
-    WiFi.begin(ssid, pass);
-    //Espera mientras se conecta
-    while (WiFi.status() != WL_CONNECTED) {
-        delay(500);
-        Serial.print(".");
+//    // Empieza la conexion con la wifi
+//    Serial.println();
+//    Serial.print("Connecting to ");
+//    Serial.println(ssid);
+//    //Pasamos los datos de la wifi a la que hay que conectarse
+//    WiFi.mode(WIFI_STA);  //Poner el WIFI en modo estacion
+//    WiFi.begin(ssid, pass);
+//    //Espera mientras se conecta
+//    while (WiFi.status() != WL_CONNECTED) {
+//        delay(500);
+//        Serial.print(".");
+//    }
+//
+//    //Conectado
+//    Serial.println("");
+//    Serial.println("WiFi connected");
+//    Serial.println("IP address: ");
+//    Serial.println(WiFi.localIP());
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+//Con Wifimanager
+    WiFiManager wifiManager;
+
+    if(!wifiManager.autoConnect("ESPInterfono"))
+    {
+        Serial.println("Fallo de Conexion");
+        ESP.reset();
+        delay(1000); 
     }
 
-    //Conectado
     Serial.println("");
     Serial.println("WiFi connected");
     Serial.println("IP address: ");
     Serial.println(WiFi.localIP());
-
-    //PROBAR DESCONECTAR EL WIFI CUANDO NO ES NECESARIO CON wIFI.MODE(WIFI_OFF)
-    //Turn off WiFi
-    //WiFi.mode(WIFI_OFF);    //This also works
-    //WiFi.forceSleepBegin(); //This also works
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
@@ -97,12 +115,12 @@ void callback(char* topic, byte* payload, unsigned int length) {
 }
 
 
-// Intenta conectar con usuario y contraseña. Tambien se usa para reconnectar si se desconecta
+// Intenta conectar con usuario y contraseï¿½a. Tambien se usa para reconnectar si se desconecta
 void reconnect() {
-    // Intenta conectar con usuario y contraseña. Tambien se usa para reconnectar si se desconecta
+    // Intenta conectar con usuario y contraseï¿½a. Tambien se usa para reconnectar si se desconecta
     while (!client.connected()) {
         Serial.print("Esperando conexion MQTT...");
-        // Espera conexion, y le pasamos el usuario y contraseña de servidor cloudMQTT
+        // Espera conexion, y le pasamos el usuario y contraseï¿½a de servidor cloudMQTT
         if (client.connect("ESP8266", USER, PASSWORD)) {
             Serial.println("Conectado");
             // una vez conectado, publicar anuncio...
@@ -169,7 +187,3 @@ void loop() {
     Serial.println("Espera a despertarse");
     setup_wifi();
 }
-
-
-
-
