@@ -1,10 +1,9 @@
 /*
  Name:		InterfonoLUZ_WifiAndo_ConLightSleep.ino
- Created:	10/19/2020 11:43:16 AM
+ Created:	19/11/2020
  Author:	ainza
 Descripcion: Detecta sonido con un KY-038, con esto despierta al ESP-01 de light-sleep
- y envia una señal por MQTT a un enchufe wifi Sonoff para que se encienda
- IMPLEMENTANDO: usando libreria wifimanager
+ y envia una señal por MQTT a un enchufe wifi Sonoff para que se encienda. Usando libreria wifimanager
 */
 
 #include <WiFiManager.h>
@@ -14,10 +13,6 @@ Descripcion: Detecta sonido con un KY-038, con esto despierta al ESP-01 de light
 #include <ESP8266WebServer.h> // Servidor web local usado para servir el portal de configuración. 
 #include <ArduinoJson.h>
 
-
-//definir las variables para la comunicacion Wifi
-//const char* ssid = "Livebox-00B5";
-//const char* pass = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
 
 //Y el sevidor de MQTT con cloudMQTT
 const char* mqtt_server = "m21.cloudmqtt.com"; //Se puede realizar con ip, hacer ping al servidor y sabremos su IP
@@ -31,6 +26,9 @@ WiFiClient espClient;
 
 //Ajustar el cliente wifi como cliente MQTT
 PubSubClient client(espClient);
+
+//Variable Tipo WifiManager para la gestion Wifi
+WiFiManager wifiManager;
 
 //Variable para el mensaje que hay que enviar al CloudMQTT "topic + (mensage + valor)"
 char msg[10];
@@ -49,38 +47,18 @@ void setup() {
 
     //Inicializar conexiones, servicios, etc. del wifi y del MQTT
     gpio_init();
+    //wifiManager.resetSettings();   //Primera vez, para probar, luego comentar
     setup_wifi();
     client.setServer(mqtt_server, mqtt_port);
     client.setCallback(callback);  //Mirar exactamente que hace y para que sirve, creo que es para mensajes que se mandan a la placa, ��es decir subscripcion??
-
+    
 }
 
 //Realizar la conexion al WIFI
 void setup_wifi() {
 
     delay(10);
-//    // Empieza la conexion con la wifi
-//    Serial.println();
-//    Serial.print("Connecting to ");
-//    Serial.println(ssid);
-//    //Pasamos los datos de la wifi a la que hay que conectarse
-//    WiFi.mode(WIFI_STA);  //Poner el WIFI en modo estacion
-//    WiFi.begin(ssid, pass);
-//    //Espera mientras se conecta
-//    while (WiFi.status() != WL_CONNECTED) {
-//        delay(500);
-//        Serial.print(".");
-//    }
-//
-//    //Conectado
-//    Serial.println("");
-//    Serial.println("WiFi connected");
-//    Serial.println("IP address: ");
-//    Serial.println(WiFi.localIP());
-////////////////////////////////////////////////////////////////////////////////////////////////////////
-//Con Wifimanager
-    WiFiManager wifiManager;
-
+    wifiManager.autoConnect("ESPInterfono");
     if(!wifiManager.autoConnect("ESPInterfono"))
     {
         Serial.println("Fallo de Conexion");
